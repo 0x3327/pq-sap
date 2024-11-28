@@ -1,0 +1,3 @@
+[submodule "kyber"]
+	path = kyber
+	url = https://github.com/Argyle-Software/kyber.git
