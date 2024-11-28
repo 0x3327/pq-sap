@@ -121,6 +121,7 @@ dependencies = [
 [[package]]
 name = "pqc_kyber"
 version = "0.7.1"
+source = "git+https://github.com/0x3327/kyber?branch=master#c0972dc6ecc0b74a6101b31410436e5b4d9f080d"
 dependencies = [
  "rand_core",
 ]

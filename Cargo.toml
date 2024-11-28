@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 rand = "0.8.5"
-pqc_kyber = {path = "kyber", features = ["kyber512"]}
+pqc_kyber = {git = "https://github.com/0x3327/kyber", features = ["kyber512"], branch = "master"}
 serde_json = "1.0.133"
 serde = { version = "1.0.215", features = ["derive"]}
 hex = "0.4.3"
