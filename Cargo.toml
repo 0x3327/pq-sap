@@ -4,3 +4,17 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+rand = "0.8.5"
+pqc_kyber = {path = "kyber", features = ["kyber512"]}
+serde_json = "1.0.133"
+serde = { version = "1.0.215", features = ["derive"]}
+hex = "0.4.3"
+sha2 = "0.10.8"
+
+[[test]]
+name = "protocol_tests" 
+path = "src/tests/protocol_tests.rs"
+
+[[bin]]
+name = "benchmark1" 
+path = "src/benchmarks/benchmark1.rs"
