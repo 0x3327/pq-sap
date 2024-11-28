@@ -10,15 +10,15 @@ mod protocol_tests{
         let mut rng = rand::thread_rng(); 
         let spending_key = keypair(&mut rng).expect("Error in generating keys"); 
         let viewing_key = keypair(&mut rng).expect("Error in generating keys");  
-        let K = spending_key.public;  
-        let V = viewing_key.public;
+        let k_pub = spending_key.public;  
+        let v_pub = viewing_key.public;
         
 
-        let (P_sender, R, _) = sender_computes_stealth_pub_key_and_viewtag(&V, &K).expect("Error in creating public stealth key");
+        let (stealth_pub_key_sender, ephemeral_pub_key, _) = sender_computes_stealth_pub_key_and_viewtag(&v_pub, &k_pub).expect("Error in creating public stealth key");
 
-        let P_recipient = recipient_computes_stealth_pub_key(&K, &R, &viewing_key.secret).expect("Error in computing public stealth key");  
+        let stealh_pub_key_recipient = recipient_computes_stealth_pub_key(&k_pub, &ephemeral_pub_key, &viewing_key.secret).expect("Error in computing public stealth key");  
 
-        assert_eq!(P_recipient, P_sender);
+        assert_eq!(stealh_pub_key_recipient, stealth_pub_key_sender);
         
     }
 }
