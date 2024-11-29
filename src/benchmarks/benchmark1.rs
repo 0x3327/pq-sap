@@ -1,7 +1,8 @@
 use std::time::Instant;
-use mlwe_sap::versions::v0::calculate_stealth_pub_key;
+
 use pqc_kyber::{decapsulate, encapsulate, keypair, KYBER_CIPHERTEXTBYTES};
 
+use mlwe_sap::versions::v0::calculate_stealth_pub_key;
 fn main(){
 
     let ns = [5000, 10000, 20000, 40000, 80000];

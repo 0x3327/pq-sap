@@ -37,7 +37,28 @@ $$k + \text{XOF}(S)$$
 and can only be calculated by the recipient, because it is necessary to have private key $k$, which only the recipient has. 
 
 For more detailed explanation of Kyber refer to our paper, Kyber-KEM original paper or Prof. Menezes lectures. 
-![[protocol.png]]
+
+![Protocol Diagram](assets/protocol.png)
+
+### Implementation details
+Two important functions to consider are: 
+- `Scan`, done by recipient, scans the ephemeral public key registry to find potential stealth public keys. 
+- `Send`, done by sender, given stealth meta-address for recipient calculates and returns ephemeral public key, stealth public key(address to send to), view tag.
+
+We provide test for correctness of our protocol, checks whether sender and recipient calculated the same stealth address in `tests/protocol_tests.rs`. 
+
+You can run tests with the following command:
+`cargo test protocol_tests`
+
+Benchmark code can be found at `benchmarks/benchmark1.rs`.  Benchmarks are ran with $N \in \{5000, 10000, 20000, 40000, 80000\}$, where $N$ is number of announcements in the ephemeral public key registry for fixed spending, viewing key and view tag size.
+
+You can run benchmarks with the following command: 
+`cargo run --release --bin benchmark1`
+### Results 
+
+Without HW optimization(no x86 support): 
+
+With HW optimization:
 
 ### Resources 
 - https://cryptography101.ca/kyber-dilithium/

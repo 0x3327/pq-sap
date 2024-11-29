@@ -1,8 +1,7 @@
 #[cfg(test)]
 mod protocol_tests{
-    use mlwe_sap::versions::v0::{recipient_computes_stealth_pub_key, sender_computes_stealth_pub_key_and_viewtag};
     use pqc_kyber::keypair;
-
+    use mlwe_sap::versions::v0::{recipient_computes_stealth_pub_key, sender_computes_stealth_pub_key_and_viewtag};
 
     #[test]
     fn test_sender_recipient_compute_same_value(){
