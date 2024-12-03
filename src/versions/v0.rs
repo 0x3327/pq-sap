@@ -1,11 +1,7 @@
 use pqc_kyber::{decapsulate, encapsulate, KyberError, KYBER_CIPHERTEXTBYTES, KYBER_K, KYBER_PUBLICKEYBYTES, KYBER_SECRETKEYBYTES, KYBER_SSBYTES, KYBER_SYMBYTES};
 use pqc_kyber::KYBER_POLYBYTES;
 use sha2::{Digest, Sha256};
-
-#[cfg(any(not(target_arch = "x86_64"), not(feature = "avx2")))]
 use pqc_kyber::reference::{poly::poly_getnoise_eta1, indcpa::{gen_a, unpack_pk}, polyvec::{polyvec_add,polyvec_basemul_acc_montgomery, Polyvec, polyvec_reduce, polyvec_tobytes}, poly::poly_tomont};
-#[cfg(all(target_arch = "x86_64", feature = "avx2"))]
-use pqc_kyber::avx2::{poly::poly_getnoise_eta1122_4x, indcpa::{gen_a, unpack_pk}, polyvec::{polyvec_add,polyvec_basemul_acc_montgomery, Polyvec, polyvec_reduce, polyvec_tobytes}, poly::poly_tomont};
 
 /// Recipient calculates shared secret and returns stealth public key 
 /// 
@@ -89,31 +85,12 @@ pub fn calculate_stealth_pub_key(ss: &[u8], k_pub: &[u8]) -> [u8; KYBER_K*KYBER_
     gen_a(&mut a, &public_seed); 
     
     // Convert shared secret to polynomial 
-    #[cfg(any(not(target_arch = "x86_64"), not(feature = "avx2")))]
-    {
-        let mut nonce = 0; 
-        for i in 0..KYBER_K {
-            poly_getnoise_eta1(&mut skpv.vec[i], &ss, nonce);
-            nonce += 1;
-        }
+    let mut nonce = 0; 
+    for i in 0..KYBER_K {
+        poly_getnoise_eta1(&mut skpv.vec[i], &ss, nonce);
+        nonce += 1;
     }
-    #[cfg(any(target_arch="x86_64", feature = "avx2"))]
-    {
-        let (sp0, sp1) = skpv.vec.split_at_mut(1); 
-        let mut _ep = Polyvec::new();
-        let (_ep0, _ep1) = _ep.vec.split_at_mut(1);
-        poly_getnoise_eta1122_4x(
-            &mut sp0[0], 
-            &mut sp1[0], 
-            &mut _ep0[0], 
-            &mut _ep1[0], 
-            ss, 
-            0, 
-            1, 
-            2, 
-            3,
-        );
-    }
+    
 
     // Compute A*S + K 
     let mut p_poly = Polyvec::new();

@@ -7,13 +7,14 @@ edition = "2021"
 rand = "0.8.5"
 serde_json = "1.0.133"
 serde = { version = "1.0.215", features = ["derive"]}
-pqc_kyber = {git = "https://github.com/0x3327/kyber", features = ["kyber512"], branch = "master"}
+pqc_kyber = {git = "https://github.com/0x3327/kyber", branch = "master"}
 hex = "0.4.3"
 sha2 = "0.10.8"
 
 [features]
 default = [] 
-avx2 = ["pqc_kyber/avx2"]
+kyber512 = ["pqc_kyber/kyber512"]
+kyber1024 = ["pqc_kyber/kyber1024"]
 
 [[test]]
 name = "protocol_tests" 

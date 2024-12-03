@@ -54,11 +54,33 @@ Benchmark code can be found at `benchmarks/benchmark1.rs`.  Benchmarks are ran w
 
 You can run benchmarks with the following command: 
 `cargo run --release --bin benchmark1`
+
+If you want, you can change the underlying kyber parameters by adding features, for example: 
+`cargo run --release --bin benchmark1 --features kyber512`
+
+With default one being `Kyber768`.
+
+Available: 
+1) `kyber512`
+2) `kyber768`
+3) `kyber1024`
+
 ### Results 
+Ran on Macbook M2 with Kyber512.
 
-Without HW optimization(no x86 support): 
+| Time (ms) | n     |
+| --------- | ----- |
+| 86        | 5000  |
+| 175       | 10000 |
+| 349       | 20000 |
+| 704       | 50000 |
+| 1406      | 80000 |
 
-With HW optimization:
+| Time (ms) | Paramset  |
+| --------- | --------- |
+| 86        | Kyber512  |
+| 140       | Kyber768  |
+| 205       | Kyber1024 |
 
 ### Resources 
 - https://cryptography101.ca/kyber-dilithium/
