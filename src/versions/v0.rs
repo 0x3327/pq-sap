@@ -1,9 +1,12 @@
-use pqc_kyber::reference::indcpa::{gen_a, unpack_pk};
-use pqc_kyber::reference::poly::{poly_getnoise_eta1, poly_tomont};
 use pqc_kyber::{decapsulate, encapsulate, KyberError, KYBER_CIPHERTEXTBYTES, KYBER_K, KYBER_PUBLICKEYBYTES, KYBER_SECRETKEYBYTES, KYBER_SSBYTES, KYBER_SYMBYTES};
-use pqc_kyber::reference::polyvec::*;
 use pqc_kyber::KYBER_POLYBYTES;
 use sha2::{Digest, Sha256};
+
+#[cfg(any(not(target_arch = "x86_64"), not(feature = "avx2")))]
+use pqc_kyber::reference::{indcpa::*, polyvec::*, poly::*}; 
+
+#[cfg(all(target_arch = "x86_64", feature = "avx2"))]
+use pqc_kyber::avx2::{indcpa::*, polyvec::*, poly::*}; 
 
 /// Recipient calculates shared secret and returns stealth public key 
 /// 
