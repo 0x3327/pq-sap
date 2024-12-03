@@ -13,7 +13,7 @@ fn main(){
 }
 
 fn run(n: usize, m: usize){
-    let mut t = 0;
+    let mut t = 0u128;
     for _ in 0..m{
         let mut rng = rand::thread_rng();
         let spending_key = keypair(&mut rng).unwrap(); 
@@ -45,8 +45,8 @@ fn run(n: usize, m: usize){
             
         }
 
-        t+=start.elapsed().subsec_millis();
+        t+=start.elapsed().as_millis();
     }
-    println!("{}", t/(m as u32));
+    println!("N = {}, {} ms", n,t/(m as u128));
 
 }
