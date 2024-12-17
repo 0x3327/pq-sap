@@ -7,7 +7,7 @@ edition = "2021"
 rand = "0.8.5"
 serde_json = "1.0.133"
 serde = { version = "1.0.215", features = ["derive"]}
-pqc_kyber = {git = "https://github.com/0x3327/kyber", branch = "master"}
+pqc_kyber = {git = "https://github.com/0x3327/kyber", branch = "master", features = ["kyber512"]}
 hex = "0.4.3"
 sha2 = "0.10.8"
 libc = "0.2.168"
@@ -16,17 +16,17 @@ libc = "0.2.168"
 cc = "1.2.4"
 
 [features]
-default = [] 
-kyber512 = ["pqc_kyber/kyber512"]
-kyber1024 = ["pqc_kyber/kyber1024"]
+default = ["rlwe"] 
+mlwe = [] 
+rlwe = [] 
 
 [[test]]
 name = "protocol_tests" 
 path = "src/tests/protocol_tests.rs"
 
 [[test]]
-name = "wrapper_tests" 
-path = "src/tests/wrapper_tests.rs"
+name = "kem_tests" 
+path = "src/tests/kem_tests.rs"
 
 [[bin]]
 name = "benchmark1" 

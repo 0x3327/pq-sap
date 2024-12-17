@@ -1,9 +1,13 @@
-use pqc_kyber::{decapsulate, encapsulate, KyberError, KYBER_K, KYBER_SSBYTES, KYBER_SYMBYTES};
-use pqc_kyber::KYBER_POLYBYTES;
-use sha2::{Digest, Sha256};
+#[cfg(feature = "mlwe")] 
+use pqc_kyber::{KYBER_K, KYBER_SYMBYTES, KYBER_POLYBYTES};
+#[cfg(feature = "mlwe")] 
 use pqc_kyber::reference::{poly::poly_getnoise_eta1, indcpa::{gen_a, unpack_pk}, polyvec::{polyvec_add,polyvec_basemul_acc_montgomery, Polyvec, polyvec_reduce, polyvec_tobytes}, poly::poly_tomont};
 
-use crate::utils::consts::*;
+use sha2::{Digest, Sha256};
+use crate::crypto::consts::*;
+use crate::crypto::kem::{decaps, encaps};
+#[cfg(feature = "rlwe")] 
+use crate::wrapper::newhope::rlwe_sample;
 
 
 /// Recipient calculates shared secret and returns stealth public key 
@@ -14,14 +18,14 @@ use crate::utils::consts::*;
 /// * `v` - recipient's private viewing key 
 /// ### Returns 
 /// * `P` - stealth public key 
-pub fn recipient_computes_stealth_pub_key(k_pub: &[u8; PUBLIC_KEY_BYTES], ephemeral_pub_key: &[u8; CIPHERTEXT_BYTES], v: &[u8; SECRET_KEY_BYTES]) -> Result<[u8; STEALTH_ADDRESS_BYTES], KyberError>{
+pub fn recipient_computes_stealth_pub_key(k_pub: &[u8; PUBLIC_KEY_BYTES], ephemeral_pub_key: &[u8; CIPHERTEXT_BYTES], v: &[u8; SECRET_KEY_BYTES]) -> [u8; STEALTH_ADDRESS_BYTES]{
     // Calculate shared secret 
-    let ss = decapsulate(ephemeral_pub_key, v)?;  
+    let ss = decaps(ephemeral_pub_key, v);
 
     // Calculate stealth public key 
     let stealth_pub_key = calculate_stealth_pub_key(&ss, k_pub); 
     
-    Ok(stealth_pub_key)
+    stealth_pub_key
 } 
 
 /// Sender calculates shared secret and returns stealth public key and view tag
@@ -33,14 +37,12 @@ pub fn recipient_computes_stealth_pub_key(k_pub: &[u8; PUBLIC_KEY_BYTES], epheme
 /// * `P` - stealth public key 
 /// * `R` - ephemeral public key
 /// * `view_tag` - view tag 
-pub fn sender_computes_stealth_pub_key_and_viewtag(v_pub: &[u8], k_pub: &[u8]) -> Result<([u8; STEALTH_ADDRESS_BYTES], [u8; CIPHERTEXT_BYTES], u8), KyberError>{
+pub fn sender_computes_stealth_pub_key_and_viewtag(v_pub: &[u8], k_pub: &[u8]) -> ([u8; STEALTH_ADDRESS_BYTES], [u8; CIPHERTEXT_BYTES], u8){
     assert!(v_pub.len() == PUBLIC_KEY_BYTES); 
     assert!(k_pub.len() == PUBLIC_KEY_BYTES); 
     
-    let mut rng = rand::thread_rng(); 
-
-    // Calculate shared secret and ciphertext used in Kyber
-    let (ephemeral_pub_key, ss) = encapsulate(v_pub, &mut rng)?; 
+    // Calculate shared secret and ciphertext used in KEM
+    let (ephemeral_pub_key, ss) = encaps(v_pub);
    
     // Calculate stealth public key 
     let stealth_pub_key = calculate_stealth_pub_key(&ss, k_pub);
@@ -48,7 +50,7 @@ pub fn sender_computes_stealth_pub_key_and_viewtag(v_pub: &[u8], k_pub: &[u8]) -
     // Calculate view tag by taking first byte of hash 
     let view_tag = calculate_view_tag(&ss);
 
-    Ok((stealth_pub_key, ephemeral_pub_key, view_tag))
+    (stealth_pub_key, ephemeral_pub_key, view_tag)
 }
 
 /// View tag calculation
@@ -59,7 +61,7 @@ pub fn sender_computes_stealth_pub_key_and_viewtag(v_pub: &[u8], k_pub: &[u8]) -
 /// ### Returns 
 /// * `view_tag` - view tag 
 pub fn calculate_view_tag(ss: &[u8]) -> u8{
-    assert!(ss.len() == KYBER_SSBYTES);
+    assert!(ss.len() == SS_BYTES);
 
     // hash ss and return first byte
     let mut hasher = Sha256::new(); 
@@ -77,7 +79,8 @@ pub fn calculate_view_tag(ss: &[u8]) -> u8{
 /// 
 /// * `P` - stealth public key 
 pub fn calculate_stealth_pub_key(ss: &[u8], k_pub: &[u8]) -> [u8; STEALTH_ADDRESS_BYTES]{
-   
+    #[cfg(feature = "mlwe")] 
+    {
     // Get the encryption of spending key and seed used to derive matrix A
     let (mut pkpv, mut skpv)  = (Polyvec::new(), Polyvec::new());
     let mut public_seed = [0u8; KYBER_SYMBYTES];
@@ -109,4 +112,8 @@ pub fn calculate_stealth_pub_key(ss: &[u8], k_pub: &[u8]) -> [u8; STEALTH_ADDRES
     polyvec_tobytes(&mut stealth_pub_key, &p_poly);
     
     stealth_pub_key 
+    }
+    #[cfg(feature = "rlwe")] 
+    rlwe_sample(k_pub, ss)
 }
+

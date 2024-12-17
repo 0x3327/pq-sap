@@ -11,5 +11,5 @@ fn main(){
     .file("src/newhope/ref/fips202.c")
     .file("src/newhope/ref/reduce.c") 
     .file("src/newhope/ref/verify.c")
-    .compile("ccakem");
+    .compile("newhope");
 }

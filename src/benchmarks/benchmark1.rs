@@ -1,8 +1,6 @@
 use std::time::Instant;
 
-use pqc_kyber::{decapsulate, encapsulate, keypair, KYBER_CIPHERTEXTBYTES};
-
-use mlwe_sap::versions::v0::calculate_stealth_pub_key;
+use mlwe_sap::{crypto::{consts::CIPHERTEXT_BYTES, kem::{decaps, encaps, key_pair}}, versions::v0::calculate_stealth_pub_key};
 fn main(){
 
     let ns = [5000, 10000, 20000, 40000, 80000];
@@ -15,18 +13,17 @@ fn main(){
 fn run(n: usize, m: usize){
     let mut t = 0u128;
     for _ in 0..m{
-        let mut rng = rand::thread_rng();
-        let spending_key = keypair(&mut rng).unwrap(); 
-        let viewing_key = keypair(&mut rng).unwrap(); 
+        let (k_pub, _) = key_pair();
+        let (v_pub, v_priv) = key_pair();
+    
 
-        let mut ephemeral_pub_key_reg: Vec<[u8; KYBER_CIPHERTEXTBYTES]> = vec![];
+        let mut ephemeral_pub_key_reg: Vec<[u8; CIPHERTEXT_BYTES]> = vec![];
         let mut view_tags: Vec<u8> = vec![];
 
         for _ in 0..n{
-            let mut rng = rand::thread_rng(); 
-            let v_pub_i = keypair(&mut rng).unwrap().public;
+            let (v_pub_i, _) = key_pair();
 
-            let (ephemeral_pub_key, ss) = encapsulate(&v_pub_i, &mut rng).unwrap(); 
+            let (ephemeral_pub_key, ss) = encaps(&v_pub_i);
         
             ephemeral_pub_key_reg.push(ephemeral_pub_key);
             view_tags.push(ss[0]);
@@ -35,12 +32,12 @@ fn run(n: usize, m: usize){
         let start = Instant::now(); 
         for (i, ephemeral_pub_key) in ephemeral_pub_key_reg.iter().enumerate(){
             
-            let ss = decapsulate(ephemeral_pub_key, &viewing_key.secret).unwrap();
+            let ss = decaps(ephemeral_pub_key, &v_priv);
         
             let view_tag = ss[0]; 
 
             if view_tags[i] == view_tag{
-                let _ = calculate_stealth_pub_key(&ss, &spending_key.public);  
+                let _ = calculate_stealth_pub_key(&ss, &k_pub);  
             }   
             
         }

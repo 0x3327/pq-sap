@@ -7,10 +7,13 @@ pub mod sender{
 pub mod recipient{
     pub mod recipient;
 }
-pub mod utils{
+pub mod crypto{
     pub mod consts; 
+    pub mod kem; 
 }
 
 pub mod wrapper{
     pub mod newhope;
+    pub mod poly; 
+    pub mod consts; 
 }

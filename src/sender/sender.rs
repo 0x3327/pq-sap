@@ -17,7 +17,7 @@ pub fn send(json_input_string: &String) -> (String, String, String){
     let k_pub_bytes: &[u8] = &hex::decode(sender_input_data.k_pub).expect("Invalid hex"); 
     let v_pub_bytes: &[u8] = &hex::decode(sender_input_data.v_pub).expect("Invalid hex");  
 
-    let (stealth_pub_key, ephemeral_pub_key, view_tag) = sender_computes_stealth_pub_key_and_viewtag(v_pub_bytes, k_pub_bytes).unwrap(); 
+    let (stealth_pub_key, ephemeral_pub_key, view_tag) = sender_computes_stealth_pub_key_and_viewtag(v_pub_bytes, k_pub_bytes); 
 
     (hex::encode(ephemeral_pub_key), hex::encode(stealth_pub_key), hex::encode([view_tag]))
 }
