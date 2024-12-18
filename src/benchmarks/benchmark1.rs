@@ -14,7 +14,7 @@ fn run(n: usize, m: usize){
     let mut t = 0u128;
     for _ in 0..m{
         let (k_pub, _) = key_pair();
-        let (v_pub, v_priv) = key_pair();
+        let (_, v_priv) = key_pair();
     
 
         let mut ephemeral_pub_key_reg: Vec<[u8; CIPHERTEXT_BYTES]> = vec![];

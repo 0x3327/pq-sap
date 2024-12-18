@@ -1,4 +1,12 @@
+#[cfg(feature = "newhope1024")]
+pub const NEWHOPE_N: usize = 1024; 
+
+#[cfg(feature = "newhope512")]
 pub const NEWHOPE_N: usize = 512;
+
+#[cfg(all(not(feature = "newhope512"), not(feature = "newhope1024")))]
+pub const NEWHOPE_N: usize = 512;
+
 pub const NEWHOPE_Q: u16 = 12289;
 pub const NEWHOPE_K: u8 = 8;
 

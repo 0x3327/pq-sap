@@ -1,12 +1,14 @@
-#[cfg(feature = "mlwe")] 
+#[cfg(any( feature = "kyber512", feature = "kyber768", feature = "kyber1024", not(any(feature = "kyber512",feature = "kyber768", feature = "kyber1024", feature = "newhope512",   feature = "newhope1024"))
+))]
 use pqc_kyber::{KYBER_K, KYBER_SYMBYTES, KYBER_POLYBYTES};
-#[cfg(feature = "mlwe")] 
+#[cfg(any( feature = "kyber512", feature = "kyber768", feature = "kyber1024", not(any(feature = "kyber512",feature = "kyber768", feature = "kyber1024", feature = "newhope512",   feature = "newhope1024"))
+))]
 use pqc_kyber::reference::{poly::poly_getnoise_eta1, indcpa::{gen_a, unpack_pk}, polyvec::{polyvec_add,polyvec_basemul_acc_montgomery, Polyvec, polyvec_reduce, polyvec_tobytes}, poly::poly_tomont};
 
 use sha2::{Digest, Sha256};
 use crate::crypto::consts::*;
 use crate::crypto::kem::{decaps, encaps};
-#[cfg(feature = "rlwe")] 
+#[cfg(any(feature = "newhope1024", feature = "newhope512"))]
 use crate::wrapper::newhope::rlwe_sample;
 
 
@@ -79,7 +81,8 @@ pub fn calculate_view_tag(ss: &[u8]) -> u8{
 /// 
 /// * `P` - stealth public key 
 pub fn calculate_stealth_pub_key(ss: &[u8], k_pub: &[u8]) -> [u8; STEALTH_ADDRESS_BYTES]{
-    #[cfg(feature = "mlwe")] 
+    #[cfg(any( feature = "kyber512", feature = "kyber768", feature = "kyber1024", not(any(feature = "kyber512",feature = "kyber768", feature = "kyber1024", feature = "newhope512",   feature = "newhope1024"))
+))]
     {
     // Get the encryption of spending key and seed used to derive matrix A
     let (mut pkpv, mut skpv)  = (Polyvec::new(), Polyvec::new());
@@ -113,7 +116,7 @@ pub fn calculate_stealth_pub_key(ss: &[u8], k_pub: &[u8]) -> [u8; STEALTH_ADDRES
     
     stealth_pub_key 
     }
-    #[cfg(feature = "rlwe")] 
+    #[cfg(any(feature = "newhope1024", feature = "newhope512"))]
     rlwe_sample(k_pub, ss)
 }
 
