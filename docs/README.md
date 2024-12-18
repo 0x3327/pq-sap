@@ -6,7 +6,7 @@ Stealth Address Protocol(SAP) is a way to provide user stealth address that they
 
 We propose SAP that utilizes Module Learning with Errors(MLWE) to protect user from quantum adversary. It uses NIST finalist Kyber-KEM at it's core. 
 
-### MLWE 
+### (M)LWE 
 Let $k$ be a positive integer parameter. Let $\textbf{s}$ and $e_i$  be "small". What do we mean by small? We define a set $B_\eta = \{f \in R_q, \lVert f \rVert _\infty \leq \eta \}$, a set of polynomials in $R_q$ whose coefficients have size at most of  $\eta$. Infinity norm for element $f \in \mathbb{Z}_q$  is defined as $\lVert f \rVert _\infty = \lvert f \bmod{q}^+ \rvert$.   
 
 For element in $f \in R_q$ we define it as the maximum of norms of all coefficients of a polynomial in $R_q$. Since each coefficient is in $\mathbb{Z}_q$, we know how to calculate it(norm above). Formally $\lVert f \rVert _\infty = \max \lVert f_i \rVert _\infty$.   
@@ -19,7 +19,9 @@ So we sample $\textbf{s} \gets B_\eta^k$ and $e_i \gets B_\eta$. We sample $a_i$
 
 **Decision MLWE** is a problem to distinguish our MLWE sample $(\textbf{a}_i , b_i) \in R_q^k \times R_q$, where $b_i = \textbf{a}_i^T \textbf{s}+ e_i$ from uniformly random sample $(\textbf{a}_i , b_i) \in R_q^k \times R_q$.
 
-### MLWE SAP 
+MLWE is a generalisation of RLWE and LWE problems. 
+
+### Post-Quantum SAP 
 The protocol works as follows: 
 
 Sender takes $M$ from ENS registry, runs encapsulation by calling Kyber.CCA.Encaps with public-key $V$ and derives shared secret $S$ and ciphertext $R$ which will serve as his public ephemeral key $R$. 
@@ -38,6 +40,8 @@ and can only be calculated by the recipient, because it is necessary to have pri
 
 For more detailed explanation of Kyber refer to our paper, Kyber-KEM original paper or Prof. Menezes lectures. 
 
+Our protocol works in both MLWE and RLWE settings. Where Kyber and Newhope are underlying key encapsulation mechanisms respecitvely.
+
 ![Protocol Diagram](assets/protocol.png)
 
 ### Implementation details
@@ -45,10 +49,14 @@ Two important functions to consider are:
 - `Scan`, done by recipient, scans the ephemeral public key registry to find potential stealth public keys. 
 - `Send`, done by sender, given stealth meta-address for recipient calculates and returns ephemeral public key, stealth public key(address to send to), view tag.
 
-We provide test for correctness of our protocol, checks whether sender and recipient calculated the same stealth address in `tests/protocol_tests.rs`. 
+`src/crypto/kem.rs` contains `encaps`, `decaps` and `key_pair` functions that call Kyber or Newhope based on features. 
+
+We provide test for correctness of our protocol, checks whether sender and recipient calculated the same stealth address in `tests/protocol_tests.rs` and key-encapsulation mechanism tests that test it's correctness in `tests/kem_tests.rs`. 
 
 You can run tests with the following command:
 `cargo test protocol_tests`
+or 
+`cargo test kem_tests`
 
 Benchmark code can be found at `benchmarks/benchmark1.rs`.  Benchmarks are ran with $N \in \{5000, 10000, 20000, 40000, 80000\}$, where $N$ is number of announcements in the ephemeral public key registry for fixed spending, viewing key and view tag size.
 
@@ -64,6 +72,8 @@ Available:
 1) `kyber512`
 2) `kyber768`
 3) `kyber1024`
+4) `newhope512`
+5) `newhope1024` 
 
 ### Results 
 Ran on Macbook M2 with Kyber512.
@@ -73,14 +83,28 @@ Ran on Macbook M2 with Kyber512.
 | 86        | 5000  |
 | 175       | 10000 |
 | 349       | 20000 |
-| 704       | 50000 |
+| 704       | 40000 |
 | 1406      | 80000 |
+
+Newhope512: 
+
+| Time (ms) | n     |
+| --------- | ----- |
+| 150       | 5000  |
+| 307       | 10000 |
+| 610       | 20000 |
+| 1214      | 40000 |
+| 2453      | 80000 |
+
+Next sections is for n = 5000 
 
 | Time (ms) | Paramset  |
 | --------- | --------- |
 | 86        | Kyber512  |
 | 140       | Kyber768  |
 | 205       | Kyber1024 |
+| 148       | Newhope512|
+| 300       |Newhope1024|
 
 ### Resources 
 - https://cryptography101.ca/kyber-dilithium/

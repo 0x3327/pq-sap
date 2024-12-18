@@ -52,6 +52,14 @@ pub fn rlwe_kem_decaps(ct: &[u8], sk: &[u8]) -> [u8; SS_BYTES]{
     ss 
 }
 
+/// Takes spending key and shared secret and outputs A*XOF(S) + K 
+/// 
+/// ### Arguments 
+/// * `ss` - 32 byte shared secret 
+/// * `spending_key` - public key of form (rho, t)  
+/// 
+/// ### Returns
+/// * `r` - RLWE sample
 pub fn rlwe_sample(spending_key: &[u8], ss: &[u8]) -> [u8; STEALTH_ADDRESS_BYTES] {
     unsafe{
         let mut b_hat = Poly{coeffs: [0u16; NEWHOPE_N]}; 
