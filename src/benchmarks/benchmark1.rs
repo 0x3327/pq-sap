@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use mlwe_sap::{crypto::{consts::CIPHERTEXT_BYTES, kem::{decaps, encaps, key_pair}}, versions::v0::calculate_stealth_pub_key};
+use pq_sap::{crypto::{consts::CIPHERTEXT_BYTES, kem::{decaps, encaps, key_pair}}, versions::v0::calculate_stealth_pub_key};
 fn main(){
 
     let ns = [5000, 10000, 20000, 40000, 80000];

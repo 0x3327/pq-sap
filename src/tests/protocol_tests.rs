@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod protocol_tests{
-    use mlwe_sap::{crypto::kem::key_pair, versions::v0::{recipient_computes_stealth_pub_key, sender_computes_stealth_pub_key_and_viewtag}};
+    use pq_sap::{crypto::kem::key_pair, versions::v0::{recipient_computes_stealth_pub_key, sender_computes_stealth_pub_key_and_viewtag}};
 
     #[test]
     fn test_sender_recipient_compute_same_value(){

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod kem_tests{
-    use mlwe_sap::crypto::kem::{decaps, encaps, key_pair};
+    use pq_sap::crypto::kem::{decaps, encaps, key_pair};
 
    
     #[test]
