@@ -9,7 +9,7 @@ use sha2::{Digest, Sha256};
 use crate::crypto::consts::*;
 use crate::crypto::kem::{decaps, encaps};
 #[cfg(any(feature = "newhope1024", feature = "newhope512"))]
-use crate::wrapper::newhope::rlwe_sample;
+use crate::wrapper::newhope::newhope::rlwe_sample;
 
 
 /// Recipient calculates shared secret and returns stealth public key 

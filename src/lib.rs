@@ -13,7 +13,13 @@ pub mod crypto{
 }
 
 pub mod wrapper{
-    pub mod newhope;
-    pub mod poly; 
-    pub mod consts; 
+    pub mod newhope{
+        pub mod newhope;
+        pub mod poly; 
+        pub mod consts; 
+    }
+    pub mod frodo{
+        pub mod frodo;
+        pub mod consts; 
+    }
 }

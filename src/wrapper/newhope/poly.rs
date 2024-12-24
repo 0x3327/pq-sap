@@ -1,4 +1,4 @@
-use crate::wrapper::consts::NEWHOPE_N;
+use crate::wrapper::newhope::consts::NEWHOPE_N;
 
 #[repr(C)] 
 pub struct Poly{

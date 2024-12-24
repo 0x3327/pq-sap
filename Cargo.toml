@@ -16,11 +16,15 @@ libc = "0.2.168"
 cc = "1.2.4"
 
 [features]
+default = ["frodo1344"]
 newhope512 = [] 
 newhope1024 = [] 
 kyber512 = ["pqc_kyber/kyber512"] 
 kyber768 = ["pqc_kyber/kyber768"] 
 kyber1024 = ["pqc_kyber/kyber1024"] 
+frodo640 = []
+frodo976 = [] 
+frodo1344 = [] 
 
 [[test]]
 name = "protocol_tests" 

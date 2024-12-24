@@ -4,3 +4,6 @@
 [submodule "src/newhope"]
 	path = src/newhope
 	url = https://github.com/0x3327/newhope.git
+[submodule "src/PQCrypto-LWEKE"]
+	path = src/PQCrypto-LWEKE
+	url = https://github.com/microsoft/PQCrypto-LWEKE
