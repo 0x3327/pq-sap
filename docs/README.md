@@ -4,7 +4,7 @@
 
 Stealth Address Protocol(SAP) is a way to provide user stealth address that they can receive assets on, that can't be linked to them.
 
-We propose SAP that utilizes Module Learning with Errors(MLWE) to protect user from quantum adversary. It uses NIST finalist Kyber-KEM at it's core. 
+We propose SAP that utilizes lattice-based cryptography to protect user from quantum adversary. 
 
 ### (M)LWE 
 Let $k$ be a positive integer parameter. Let $\textbf{s}$ and $e_i$  be "small". What do we mean by small? We define a set $B_\eta = \{f \in R_q, \lVert f \rVert _\infty \leq \eta \}$, a set of polynomials in $R_q$ whose coefficients have size at most of  $\eta$. Infinity norm for element $f \in \mathbb{Z}_q$  is defined as $\lVert f \rVert _\infty = \lvert f \bmod{q}^+ \rvert$.   
@@ -40,7 +40,7 @@ and can only be calculated by the recipient, because it is necessary to have pri
 
 For more detailed explanation of Kyber refer to our paper, Kyber-KEM original paper or Prof. Menezes lectures. 
 
-Our protocol works in both MLWE and RLWE settings. Where Kyber and Newhope are underlying key encapsulation mechanisms respecitvely.
+Our protocol works in MLWE and RLWE and LWE setting. Where Kyber, Newhope and FrodoKEM are underlying key encapsulation mechanisms respecitvely.
 
 ![Protocol Diagram](assets/protocol.png)
 
@@ -74,9 +74,14 @@ Available:
 3) `kyber1024`
 4) `newhope512`
 5) `newhope1024` 
+6) `frodo640` 
+7) `frodo976` 
+8) `frodo1344`
 
 ### Results 
-Ran on Macbook M2 with Kyber512.
+All benchmarks are ran on Macbook M2
+
+Kyber512:
 
 | Time (ms) | n     |
 | --------- | ----- |
@@ -96,6 +101,16 @@ Newhope512:
 | 1214      | 40000 |
 | 2453      | 80000 |
 
+Frodo640: 
+
+|Time(**s**)| n     |
+| --------- | ----- |
+| 6.5       | 5000  |
+| 13.2      | 10000 |
+|           | 20000 |
+|           | 40000 |
+|           | 80000 |
+
 Next sections is for n = 5000 
 
 | Time (ms) | Paramset  |
@@ -105,7 +120,12 @@ Next sections is for n = 5000
 | 205       | Kyber1024 |
 | 148       | Newhope512|
 | 300       |Newhope1024|
+| 6513      | Frodo640  | 
+|           | Frodo976  | 
+|           | Frodo1344 |
 
 ### Resources 
 - https://cryptography101.ca/kyber-dilithium/
 - https://eprint.iacr.org/2017/634.pdf
+- https://eprint.iacr.org/2015/1092.pdf
+- https://frodokem.org/files/FrodoKEM-specification-20210604.pdf

@@ -16,7 +16,7 @@ libc = "0.2.168"
 cc = "1.2.4"
 
 [features]
-default = ["frodo1344"]
+default = ["frodo640"]
 newhope512 = [] 
 newhope1024 = [] 
 kyber512 = ["pqc_kyber/kyber512"] 
