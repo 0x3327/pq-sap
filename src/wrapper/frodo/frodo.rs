@@ -96,6 +96,14 @@ pub fn lwe_kem_decaps(ct: &[u8], sk: &[u8]) -> [u8; CRYPTO_BYTES] {
 }
 
 #[cfg(any(feature = "frodo640", feature = "frodo976", feature = "frodo1344"))]
+/// Takes spending key and shared secret and outputs A*XOF(S) + K 
+/// 
+/// ### Arguments 
+/// * `ss` - shared secret 
+/// * `spending_key` - public key of form (rho, t)  
+/// 
+/// ### Returns
+/// * `r` - LWE sample
 pub fn lwe_sample(spending_key: &[u8],ss: &[u8]) -> [u8; STEALTH_ADDRESS_BYTES]{
     let mut s_poly = [0u16; (2*PARAMS_N+PARAMS_NBAR)*PARAMS_NBAR];
     let mut stealth_pub_key_poly = [0u16; PARAMS_N*PARAMS_NBAR];

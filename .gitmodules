@@ -1,9 +1,6 @@
-[submodule "kyber"]
-	path = kyber
-	url = https://github.com/0x3327/kyber.git
-[submodule "src/newhope"]
-	path = src/newhope
+[submodule "src/libs/newhope"]
+	path = src/libs/newhope
 	url = https://github.com/0x3327/newhope.git
-[submodule "src/PQCrypto-LWEKE"]
-	path = src/PQCrypto-LWEKE
+[submodule "src/libs/PQCrypto-LWEKE"]
+	path = src/libs/PQCrypto-LWEKE
 	url = https://github.com/microsoft/PQCrypto-LWEKE

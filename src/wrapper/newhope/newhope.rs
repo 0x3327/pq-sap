@@ -1,7 +1,13 @@
 use libc::c_uchar;
 
 use crate::crypto::consts::*;
-use super::{consts::NEWHOPE_N, poly::Poly}; 
+
+use super::consts::NEWHOPE_N;
+
+#[repr(C)] 
+pub struct Poly{
+    pub coeffs: [u16; NEWHOPE_N], 
+}
 
 extern "C"{
     fn crypto_kem_keypair(pk: *mut c_uchar, sk: *mut c_uchar) -> i32; 
