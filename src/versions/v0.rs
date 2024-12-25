@@ -6,6 +6,7 @@ use pqc_kyber::reference::{poly::poly_getnoise_eta1, indcpa::{gen_a, unpack_pk},
 use sha2::{Digest, Sha256};
 use crate::crypto::consts::*;
 use crate::crypto::kem::{decaps, encaps};
+#[cfg(any(feature = "frodo640", feature = "frodo976", feature = "frodo1344"))]
 use crate::wrapper::frodo::frodo::lwe_sample;
 #[cfg(any(feature = "newhope1024", feature = "newhope512"))]
 use crate::wrapper::newhope::newhope::rlwe_sample;

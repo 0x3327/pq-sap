@@ -107,9 +107,9 @@ Frodo640:
 | --------- | ----- |
 | 6.5       | 5000  |
 | 13.2      | 10000 |
-|           | 20000 |
-|           | 40000 |
-|           | 80000 |
+| 25.6      | 20000 |
+| 51.2      | 40000 |
+| 103.2     | 80000 |
 
 Next sections is for n = 5000 
 
@@ -121,8 +121,8 @@ Next sections is for n = 5000
 | 148       | Newhope512|
 | 300       |Newhope1024|
 | 6513      | Frodo640  | 
-|           | Frodo976  | 
-|           | Frodo1344 |
+| 13805     | Frodo976  | 
+| 24714     | Frodo1344 |
 
 ### Resources 
 - https://cryptography101.ca/kyber-dilithium/

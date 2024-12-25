@@ -1,15 +1,15 @@
+#[cfg(any(feature = "frodo640", feature = "frodo976", feature = "frodo1344"))]
 use std::mem;
-
+#[cfg(any(feature = "frodo640", feature = "frodo976", feature = "frodo1344"))]
 use crate::crypto::consts::STEALTH_ADDRESS_BYTES;
 
 #[cfg(any(feature = "frodo640", feature = "frodo976", feature = "frodo1344"))]
 use super::consts::*;
 
-
-use libc::c_longlong;
 #[cfg(any(feature = "frodo640", feature = "frodo976", feature = "frodo1344"))]
-use libc::c_uchar;
+use libc::{c_uchar, c_longlong};
 
+#[cfg(any(feature = "frodo640", feature = "frodo976", feature = "frodo1344"))]
 extern "C"{
     //int crypto_kem_keypair_Frodo640(unsigned char *pk, unsigned char *sk);
     #[cfg(feature = "frodo640")]
@@ -34,6 +34,7 @@ extern "C"{
     #[cfg(feature = "frodo1344")]
     fn crypto_kem_dec_Frodo1344(ss: *mut c_uchar, ct: *const c_uchar, sk: *const c_uchar) -> i32;
 
+  
     fn shake128(output: *mut c_uchar, outlen: c_longlong, input: *const c_uchar, inlen: c_longlong);
     fn frodo_sample_n(s: *mut u16, n: usize);
     fn frodo_mul_add_as_plus_e(out: *mut u16, s: *const u16, e: *const u16, seed_A: *const u8) -> i32;
@@ -94,6 +95,7 @@ pub fn lwe_kem_decaps(ct: &[u8], sk: &[u8]) -> [u8; CRYPTO_BYTES] {
     ss 
 }
 
+#[cfg(any(feature = "frodo640", feature = "frodo976", feature = "frodo1344"))]
 pub fn lwe_sample(spending_key: &[u8],ss: &[u8]) -> [u8; STEALTH_ADDRESS_BYTES]{
     let mut s_poly = [0u16; (2*PARAMS_N+PARAMS_NBAR)*PARAMS_NBAR];
     let mut stealth_pub_key_poly = [0u16; PARAMS_N*PARAMS_NBAR];
