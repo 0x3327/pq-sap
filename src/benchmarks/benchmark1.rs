@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use pq_sap::{crypto::{consts::CIPHERTEXT_BYTES, kem::{decaps, encaps, key_pair}}, versions::v0::calculate_stealth_pub_key};
+use pq_sap::{crypto::{consts::CIPHERTEXT_BYTES, kem::{decaps, encaps, key_pair}}, versions::v0::{calculate_stealth_pub_key, calculate_view_tag}};
 fn main(){
 
     let ns = [5000, 10000, 20000, 40000, 80000];
@@ -26,7 +26,7 @@ fn run(n: usize, m: usize){
             let (ephemeral_pub_key, ss) = encaps(&v_pub_i);
         
             ephemeral_pub_key_reg.push(ephemeral_pub_key);
-            view_tags.push(ss[0]);
+            view_tags.push(calculate_view_tag(&ss));
         }
 
         let start = Instant::now(); 
@@ -34,7 +34,7 @@ fn run(n: usize, m: usize){
             
             let ss = decaps(ephemeral_pub_key, &v_priv);
         
-            let view_tag = ss[0]; 
+            let view_tag = calculate_view_tag(&ss); 
 
             if view_tags[i] == view_tag{
                 let _ = calculate_stealth_pub_key(&ss, &k_pub);  

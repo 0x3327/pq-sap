@@ -58,7 +58,9 @@ You can run tests with the following command:
 or 
 `cargo test kem_tests`
 
-Benchmark code can be found at `benchmarks/benchmark1.rs`.  Benchmarks are ran with $N \in \{5000, 10000, 20000, 40000, 80000\}$, where $N$ is number of announcements in the ephemeral public key registry for fixed spending, viewing key and view tag size.
+First benchmark code can be found at `benchmarks/benchmark1.rs`.  Benchmarks are ran with $N \in \{5000, 10000, 20000, 40000, 80000\}$, where $N$ is number of announcements in the ephemeral public key registry for fixed spending, viewing key and view tag size. 
+
+Second benchmark is at `benchmarks/benchmark2.rs`. It runs with $N \in \{5000, 10000, 20000, 40000, 80000\}$ but now we set viewtag to be the whole hash of $S$ instead of one byte, it first creates a registry and then shuffles it since we stop out for loop now once we hit the hash of S. 
 
 You can run benchmarks with the following command: 
 `cargo run --release --bin benchmark1`
@@ -85,44 +87,47 @@ Kyber512:
 
 | Time (ms) | n     |
 | --------- | ----- |
-| 86        | 5000  |
-| 175       | 10000 |
-| 349       | 20000 |
-| 704       | 40000 |
+| 88        | 5000  |
+| 174       | 10000 |
+| 350       | 20000 |
+| 700       | 40000 |
 | 1406      | 80000 |
 
 Newhope512: 
 
 | Time (ms) | n     |
 | --------- | ----- |
-| 150       | 5000  |
-| 307       | 10000 |
-| 610       | 20000 |
-| 1214      | 40000 |
-| 2453      | 80000 |
+| 148       | 5000  |
+| 301       | 10000 |
+| 597       | 20000 |
+| 1198      | 40000 |
+| 2395      | 80000 |
 
 Frodo640: 
 
 |Time(**s**)| n     |
 | --------- | ----- |
-| 6.5       | 5000  |
-| 13.2      | 10000 |
-| 25.6      | 20000 |
-| 51.2      | 40000 |
-| 103.2     | 80000 |
+| 6.4       | 5000  |
+| 12.9      | 10000 |
+| 25.9      | 20000 |
+| 51.5      | 40000 |
+| 103.9     | 80000 |
 
-Next sections is for n = 5000 
+Next section is for n = 5000 
 
 | Time (ms) | Paramset  |
 | --------- | --------- |
-| 86        | Kyber512  |
-| 140       | Kyber768  |
+| 88        | Kyber512  |
+| 141       | Kyber768  |
 | 205       | Kyber1024 |
 | 148       | Newhope512|
-| 300       |Newhope1024|
-| 6513      | Frodo640  | 
-| 13805     | Frodo976  | 
-| 24714     | Frodo1344 |
+| 293       |Newhope1024|
+| 6444      | Frodo640  | 
+| 13975     | Frodo976  | 
+| 24806     | Frodo1344 |
+
+Result of running benchmark2 and benchmark1 with Kyber512. 
+![Protocol benchmarks](assets/benchmarks.png)
 
 ### Resources 
 - https://cryptography101.ca/kyber-dilithium/
