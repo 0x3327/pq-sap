@@ -37,3 +37,6 @@ path = "src/tests/kem_tests.rs"
 name = "benchmark1" 
 path = "src/benchmarks/benchmark1.rs"
 
+[[bin]]
+name = "benchmark2" 
+path = "src/benchmarks/benchmark2.rs"
