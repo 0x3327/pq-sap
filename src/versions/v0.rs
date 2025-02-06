@@ -67,7 +67,7 @@ pub fn calculate_view_tag(ss: &[u8]) -> u8{
 
     // hash ss and return first byte
     let mut hasher = Sha256::new(); 
-    hasher.update(ss);
+    hasher.update(ss); 
     hasher.finalize()[0] 
 }
 

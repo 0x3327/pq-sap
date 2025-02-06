@@ -48,12 +48,20 @@ pub struct RecipientInputData{
     k: String, 
     /// Viewing private key in hex format
     v: String,  
+    /// Version of protocol 
+    version: Version
+}
+
+#[derive(Deserialize, Serialize)]
+pub enum Version{
+    V0, 
+    V1 
 }
 
 impl RecipientInputData{
-    pub fn new(ephemeral_pub_key_reg: Vec<String>, view_tags: Vec<String>, k: String, v: String) -> RecipientInputData{
+    pub fn new(ephemeral_pub_key_reg: Vec<String>, view_tags: Vec<String>, k: String, v: String, version: Version) -> RecipientInputData{
         return RecipientInputData{
-            ephemeral_pub_key_reg, view_tags, k, v
+            ephemeral_pub_key_reg, view_tags, k, v, version
         }
     }
 }
