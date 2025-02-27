@@ -1,5 +1,7 @@
 use crypto_bigint::{Encoding, NonZero, U256};
-use secp256k1::{PublicKey, Scalar, Secp256k1};
+use ethers::abi::Address;
+use secp256k1::{PublicKey, Scalar, Secp256k1, SecretKey};
+use sha3::{Digest, Keccak256}; 
 
 use crate::crypto::{consts::{CIPHERTEXT_BYTES, SECRET_KEY_BYTES}, kem::{decaps, encaps}};
 
@@ -69,8 +71,56 @@ pub fn calculate_stealth_pub_key(ss: &[u8; 32], k_pub: &PublicKey) -> PublicKey{
     // convert back to bytes 
     let ss = ss.to_be_bytes();
 
-    // calculate stealth public key as ss*K 
-    let stealth_pub_key = k_pub.mul_tweak(&secp, &Scalar::from_be_bytes(ss).expect("Error converting")).expect("Failed calculating stealth public key");
+    
+    let s_scalar = Scalar::from_be_bytes(ss).expect("Error converting");
+    let s_g = PublicKey::from_secret_key(&secp, 
+        &SecretKey::from_slice(&s_scalar.to_be_bytes()).unwrap());
+    
+    // calculate stealth public key as K+s*G = (k+s)*G = K+S 
+    k_pub.combine(&s_g).expect("Failed to add public keys")
+}
 
-    stealth_pub_key
+/// Converts stealth public key that is `secp256k1`'s `PublicKey` to the  valid stealth address of type `Address`
+/// 
+/// ### Arguments 
+/// * `stealth_pub_key` - Stealth public key of `secp256k1` curve
+/// 
+/// ### Returns 
+/// * `stealth_address` - Valid stealth address 
+pub fn stealth_pub_key_to_address(stealth_pub_key:&PublicKey) -> Address{
+    // Takes last 20 bytes from the output of `Keccak256`
+    let pub_bytes = stealth_pub_key.serialize_uncompressed();
+    let hash = Keccak256::digest(&pub_bytes[1..]);
+    let mut address_bytes = [0u8; 20];
+    address_bytes.copy_from_slice(&hash[12..32]);
+    let stealth_address = Address::from(&address_bytes); 
+    
+    stealth_address
+}
+
+/// Calculates stealth private key 
+/// 
+/// ### Arguments
+/// * `s` - shared secret, a 32 byte array 
+/// * `k` - `secp256k1`'s `SecretKey` 
+/// 
+/// ### Returns 
+/// * `stealth_priv_key` - hex encoding of calculated stealth private key 
+pub fn calculate_stealth_priv_key(s: &[u8; 32], k: &SecretKey) -> String{
+    let s = U256::from_le_bytes(*s);
+    let k = U256::from_be_bytes(k.secret_bytes());
+
+
+    let p = U256::from_be_hex("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141"); 
+
+    // reduce s mod p, where p is secp256k1's modulus p  
+    let s = s.rem(&NonZero::new(p).unwrap());
+   
+    // stealth_priv_key = k+s
+    let stealth_priv_key = k.add_mod(&s, &NonZero::new(p).unwrap());
+ 
+   
+    let stealth_priv_key = hex::encode(stealth_priv_key.to_be_bytes()); 
+
+    stealth_priv_key 
 }

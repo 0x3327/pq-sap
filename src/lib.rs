@@ -12,7 +12,17 @@ pub mod crypto{
     pub mod consts; 
     pub mod kem; 
 }
-
+pub mod on_chain{
+    pub mod utils; 
+    pub mod rest{    
+        pub mod service{
+            pub mod blockchain_service;
+        }
+        pub mod controller{
+            pub mod blockchain_controller;
+        }
+    }
+}
 pub mod wrapper{
     pub mod newhope{
         pub mod newhope;
