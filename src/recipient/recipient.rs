@@ -1,7 +1,9 @@
+use std::error::Error;
+
 use ethers::abi::Address;
-use pqc_kyber::decapsulate;
 use secp256k1::{PublicKey, Secp256k1, SecretKey};
 use serde::{Deserialize, Serialize};
+use crate::crypto::kem::decaps;
 use crate::versions::v1::{calculate_stealth_pub_key, stealth_pub_key_to_address};
 use crate::versions::v0::calculate_view_tag;
 
@@ -12,17 +14,15 @@ use crate::versions::v0::calculate_view_tag;
 /// 
 /// ### Returns
 /// A vector of potential stealth addresses 
-pub fn scan(recipient_input_data: RecipientInputData) -> (Vec<[u8; 32]>, Vec<Address>){
+pub fn scan(recipient_input_data: RecipientInputData) -> Result<(Vec<[u8; 32]>, Vec<Address>), Box<dyn Error>>{
     let ephemeral_pub_key_reg = recipient_input_data.ephemeral_pub_key_reg; 
     let view_tags = recipient_input_data.view_tags;
 
-    let byte_len = recipient_input_data.k.len()/2;
-    let mut k_priv_bytes = vec![0u8; byte_len]; 
-    hex::decode_to_slice(recipient_input_data.k, &mut k_priv_bytes).expect("Failed to decode hex");
+  
+    let k_priv_bytes = hex::decode(recipient_input_data.k)?;
+    let k_priv = SecretKey::from_slice(&k_priv_bytes)?;
 
-    let k_priv = SecretKey::from_slice(&k_priv_bytes).unwrap();
-
-    let v_bytes: &[u8] = &hex::decode(recipient_input_data.v).expect("Invalid hex"); 
+    let v_bytes: &[u8] = &hex::decode(recipient_input_data.v)?; 
     
     let mut shared_secrets: Vec<[u8; 32]> = vec![]; 
     let mut stealth_addresses: Vec<Address> = vec![]; 
@@ -30,9 +30,9 @@ pub fn scan(recipient_input_data: RecipientInputData) -> (Vec<[u8; 32]>, Vec<Add
     let k_pub = PublicKey::from_secret_key(&Secp256k1::new(), &k_priv);
 
     for (i, ephemeral_pub_key) in ephemeral_pub_key_reg.iter().enumerate(){
-        let ephemeral_pub_key_bytes: &[u8] = &hex::decode(ephemeral_pub_key).expect("Invalid hex");  
+        let ephemeral_pub_key_bytes: &[u8] = &hex::decode(ephemeral_pub_key).unwrap();  
         
-        let ss = decapsulate(ephemeral_pub_key_bytes, v_bytes).unwrap();
+        let ss = decaps(ephemeral_pub_key_bytes, v_bytes);
       
         let view_tag = calculate_view_tag(&ss); 
     
@@ -46,7 +46,7 @@ pub fn scan(recipient_input_data: RecipientInputData) -> (Vec<[u8; 32]>, Vec<Add
         }   
         
     }
-    (shared_secrets, stealth_addresses)
+    Ok((shared_secrets, stealth_addresses))
 } 
 
 

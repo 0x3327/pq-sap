@@ -1,8 +1,10 @@
-use std::error::Error;
+use std::{env, error::Error, sync::Arc};
 use colored::Colorize;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
-use pq_sap::on_chain::{rest::service::blockchain_service::{fetch_meta_address, BlockchainService}, utils::is_valid_hex};
+use pq_sap::on_chain::{rest::{repository::meta_data_repository::MetaDataRepository, service::blockchain_service::BlockchainService}, utils::{create_metadata_table, is_valid_hex}};
+use sqlx::MySqlPool;
 use tokio::{self};
+use dotenv::dotenv;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>>{
@@ -63,7 +65,19 @@ async fn handle_receive(theme: &ColorfulTheme) -> Result<(), Box<dyn Error>>{
         .interact_text()
         .unwrap();
 
-    let result = BlockchainService::receive_eth(&k_hex, &v_hex, &destination_wallet).await?;
+    dotenv().ok(); 
+    let db_url = env::var("DATABASE_URL").expect("Database url not set.");
+    let pool = MySqlPool::connect(&db_url)
+    .await
+    .expect("Failed to connect to db."); 
+    
+    
+    create_metadata_table(&pool).await.expect("Failed to create the table"); 
+
+    let meta_data_repo = MetaDataRepository::new(pool.clone()); 
+    let blockchain_service = Arc::new(BlockchainService::new(meta_data_repo));
+    
+    let result = blockchain_service.receive_eth(&k_hex, &v_hex, &destination_wallet).await?;
     if result.len()>0{
         for r in result{
             println!("{} Received {} from stealth address {}.","SUCCESS".green(), r.1.to_string().yellow(), r.0.to_string().yellow());
@@ -104,12 +118,14 @@ async fn handle_send(theme: &ColorfulTheme) -> Result<(), Box<dyn Error>>{
         })
         .interact_text()
         .unwrap();
-    
 
-    let meta_address = fetch_meta_address(&ens_domain).await?; 
-
-    let result = BlockchainService::send_eth(value, &wallet, &meta_address).await?;
-    println!("{} Sent {} on stealth address {}", "SUCCESS:".green(), value.to_string().yellow(), result.to_string().yellow());
+    let result = BlockchainService::send_eth(value, &wallet, &ens_domain).await?;
+    println!("{} Sent {} on stealth address {}, transaction hash: {}", 
+        "SUCCESS:".green(), 
+        value.to_string().yellow(), 
+        result.0.to_string().yellow(), 
+        result.1.to_string().yellow()
+    );
     Ok(())
 
 }

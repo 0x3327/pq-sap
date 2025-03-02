@@ -21,6 +21,12 @@ pub mod on_chain{
         pub mod controller{
             pub mod blockchain_controller;
         }
+        pub mod repository{
+            pub mod meta_data_repository;
+        }
+        pub mod model{
+            pub mod meta_data; 
+        }
     }
 }
 pub mod wrapper{
