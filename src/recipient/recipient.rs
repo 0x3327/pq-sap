@@ -36,7 +36,7 @@ pub fn scan(recipient_input_data: RecipientInputData) -> Result<(Vec<[u8; 32]>, 
       
         let view_tag = calculate_view_tag(&ss); 
     
-        if hex::decode(&view_tags[i]).expect("Invalid hex")[0] == view_tag{
+        if hex::decode(&view_tags[i])?[0] == view_tag{
             let stealth_pub_key = calculate_stealth_pub_key(&ss, &k_pub);  
             let stealth_address = stealth_pub_key_to_address(&stealth_pub_key); 
             if stealth_address == recipient_input_data.stealth_addresses[i]{

@@ -8,6 +8,7 @@ use dotenv::dotenv;
 async fn main() -> std::io::Result<()>{
     dotenv().ok(); 
     let db_url = env::var("DATABASE_URL").expect("Database url not set.");
+    let connection_string = env::var("CONNECTION_STRING").expect("Incorrect connection string.");
     let pool = MySqlPool::connect(&db_url)
     .await
     .expect("Failed to connect to db."); 
@@ -23,7 +24,7 @@ async fn main() -> std::io::Result<()>{
         .service(send_eth)
         .service(receive_eth)
     })
-    .bind("127.0.0.1:8080")?
+    .bind(connection_string)?
     .run()
     .await
 }

@@ -11,8 +11,6 @@ abigen!(
     ]"#
 );
 
-//pub const CONTRACT_ADDRESS: &str = "0xED737936e54fAC3B4fF271928a7E31Bc140119B0"; // mainnet
-pub const CONTRACT_ADDRESS: &str = "0xA0670138449C6E0e9EB2116949a783A9b0D5A22A"; // testnet 
 
 pub struct BlockchainService{
     meta_data_repo: Arc<MetaDataRepository>, 
@@ -45,7 +43,7 @@ impl BlockchainService {
         
         let client = Arc::new(SignerMiddleware::new(provider, wallet)); 
 
-        let contract_address:Address = CONTRACT_ADDRESS.parse()?;
+        let contract_address:Address = env::var("CONTRACT_ADDRESS").expect("Contract address not set").parse()?;
         let contract = PQSAP_Announcer::new(contract_address, client); 
 
         let value = U256::from(parse_ether(value)?);
@@ -98,7 +96,7 @@ impl BlockchainService {
                 // Estimate needed gas 
                 let dummy_tx = TransactionRequest::new()
                     .to(destination)
-                    .value(U256::from(1))
+                    .value(U256::from(0))
                     .from(wallet.address());
                 let gas_price = client.get_gas_price().await?;
                 let gas_estimate = client.estimate_gas(&dummy_tx.into(), None).await?;
@@ -134,7 +132,7 @@ impl BlockchainService {
     async fn fetch_transactions(&self, wallet: &String) -> Result<(Vec<Address>, Vec<String>, Vec<String>), Box<dyn Error>>{
         let provider_string = env::var("PROVIDER_STRING").expect("Provider not set");
         let provider = Provider::<Http>::try_from(provider_string)?; 
-        let contract_address:Address = CONTRACT_ADDRESS.parse()?; 
+        let contract_address:Address = env::var("CONTRACT_ADDRESS").expect("Contract address not set").parse()?; 
         
         // Read latest block accessed 
         let result = self.meta_data_repo.get_meta_data_by_wallet(wallet).await?;
