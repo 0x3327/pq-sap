@@ -8,6 +8,8 @@ use dotenv::dotenv;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>>{
+    dotenv().ok(); 
+
     let theme = ColorfulTheme::default();
     
     let options = vec!["Send", "Receive"]; 
@@ -23,6 +25,7 @@ async fn main() -> Result<(), Box<dyn Error>>{
         1 => handle_receive(&theme).await?, 
         _ =>  unreachable!()
     }
+
    
     
     Ok(())

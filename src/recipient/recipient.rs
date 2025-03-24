@@ -1,7 +1,6 @@
 use std::error::Error;
-
 use ethers::abi::Address;
-use secp256k1::{PublicKey, Secp256k1, SecretKey};
+use secp256k1::PublicKey;
 use serde::{Deserialize, Serialize};
 use crate::crypto::kem::decaps;
 use crate::versions::v1::{calculate_stealth_pub_key, stealth_pub_key_to_address};
@@ -19,16 +18,15 @@ pub fn scan(recipient_input_data: RecipientInputData) -> Result<(Vec<[u8; 32]>, 
     let view_tags = recipient_input_data.view_tags;
 
   
-    let k_priv_bytes = hex::decode(recipient_input_data.k)?;
-    let k_priv = SecretKey::from_slice(&k_priv_bytes)?;
+    let k_pk_bytes = hex::decode(recipient_input_data.k_pk)?;
+    let k_pub = PublicKey::from_slice(&k_pk_bytes)?;
 
     let v_bytes: &[u8] = &hex::decode(recipient_input_data.v)?; 
     
     let mut shared_secrets: Vec<[u8; 32]> = vec![]; 
     let mut stealth_addresses: Vec<Address> = vec![]; 
 
-    let k_pub = PublicKey::from_secret_key(&Secp256k1::new(), &k_priv);
-
+   
     for (i, ephemeral_pub_key) in ephemeral_pub_key_reg.iter().enumerate(){
         let ephemeral_pub_key_bytes: &[u8] = &hex::decode(ephemeral_pub_key).unwrap();  
         
@@ -57,12 +55,10 @@ pub struct RecipientInputData{
     pub ephemeral_pub_key_reg: Vec<String>, 
     /// Corresponding view tags in hex format
     pub view_tags: Vec<String>, 
-    /// Spending private key in hex format
-    k: String, 
+    /// Spending public key in hex format
+    pub k_pk: String, 
     /// Viewing private key in hex format
-    v: String,  
-    /// Version of protocol 
-    version: Version
+    pub v: String,  
 }
 
 #[derive(Deserialize, Serialize)]
@@ -72,9 +68,9 @@ pub enum Version{
 }
 
 impl RecipientInputData{
-    pub fn new(ephemeral_pub_key_reg: Vec<String>, view_tags: Vec<String>, stealth_addresses: Vec<Address>, k: String, v: String, version: Version) -> RecipientInputData{
+    pub fn new(ephemeral_pub_key_reg: Vec<String>, view_tags: Vec<String>, stealth_addresses: Vec<Address>, k_pk: String, v: String) -> RecipientInputData{
         return RecipientInputData{
-            ephemeral_pub_key_reg, stealth_addresses, view_tags, k, v, version,
+            ephemeral_pub_key_reg, stealth_addresses, view_tags, k_pk, v,
         }
     }
 }

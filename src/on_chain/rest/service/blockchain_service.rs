@@ -1,8 +1,8 @@
 use ethers::{abi::{decode, Address}, contract::abigen, middleware::SignerMiddleware, providers::{Http, Middleware, Provider}, signers::{LocalWallet, Signer}, types::{BlockNumber, Filter, TransactionRequest, H256, U256, U64}, utils::parse_ether};
 use pqc_kyber::KYBER_PUBLICKEYBYTES;
-use secp256k1::SecretKey;
+use secp256k1::{PublicKey, Secp256k1, SecretKey};
 use std::{env, error::Error, sync::Arc};
-use crate::{on_chain::rest::repository::meta_data_repository::MetaDataRepository, recipient::recipient::{scan, RecipientInputData}, sender::sender::{send, SenderInputData}, versions::v1::calculate_stealth_priv_key};
+use crate::{on_chain::rest::{controller::blockchain_controller::{ScanEntry, ScanRequest, SendEthResponse}, repository::meta_data_repository::MetaDataRepository}, sender::sender::SenderInputData, versions::v1::calculate_stealth_priv_key};
 
 abigen!(
     PQSAP_Announcer,
@@ -33,8 +33,16 @@ impl BlockchainService {
             return Err(format!("Error: spending key must be of size {}", KYBER_PUBLICKEYBYTES).into())
         }
 
-        let (stealth_address, ephemeral_pub_key, view_tag) = send(&meta_address)?;
+        let endpoint =  env::var("CONNECTION_STRING").expect("Incorrect connection string.");
+        let client = reqwest::Client::new(); 
+        let response = client
+        .post(format!("http://{}/send-eth", endpoint))
+        .json(&meta_address)
+        .send()
+        .await?;
 
+        let response_data: SendEthResponse = response.json().await?;
+   
         let provider_string = env::var("PROVIDER_STRING").expect("Provider not set");
         let provider = Provider::<Http>::try_from(provider_string)?;
         let chain_id = provider.get_chainid().await?;
@@ -48,12 +56,15 @@ impl BlockchainService {
 
         let value = U256::from(parse_ether(value)?);
 
-        let tx_hash = contract.send_eth_via_proxy(stealth_address, ephemeral_pub_key.into(), view_tag.into())
+        let ephemeral_pub_key = hex::decode(&response_data.ephemeral_public_key)?;
+        let view_tag = hex::decode(&response_data.viewtag)?;
+
+        let tx_hash = contract.send_eth_via_proxy(response_data.stealth_address, ephemeral_pub_key.into(), view_tag.into())
         .value(value).send().await?.tx_hash();
 
 
 
-        Ok((stealth_address, tx_hash))
+        Ok((response_data.stealth_address, tx_hash))
     }
 
 
@@ -67,23 +78,40 @@ impl BlockchainService {
         let k_bytes = hex::decode(k_hex)?;
         let k = SecretKey::from_slice(&k_bytes)?;
       
-        // find all new transactions
-        let (stealth_addresses, ephemeral_pub_key_reg, view_tags) = self.fetch_transactions(&destination_wallet).await?; 
-        
-        let recipient_input_data = RecipientInputData::new(ephemeral_pub_key_reg, view_tags, stealth_addresses, k_hex.clone(), v_hex.clone(), crate::recipient::recipient::Version::V1);
+        let secp = Secp256k1::new();
+        let k_pub = PublicKey::from_secret_key(&secp, &k); 
+        let k_pub = hex::encode(k_pub.serialize_uncompressed()); 
+
+
+        let scan_request = ScanRequest{
+            k_pub, 
+            v: v_hex.to_string(), 
+            destination_wallet: destination_wallet.to_string(),
+        }; 
 
         // scan for transactions needed 
-        let (shared_secrets, stealth_addresses) = scan(recipient_input_data)?;
+        let endpoint = env::var("CONNECTION_STRING").expect("Incorrect connection string.");
+        let client = reqwest::Client::new(); 
+        let response = client
+        .post(format!("http://{}/scan-eth", endpoint))
+        .json(&scan_request)
+        .send()
+        .await?;
 
+        let scan_result: Vec<ScanEntry> = response.json().await?; 
+    
         let provider_string = env::var("PROVIDER_STRING").expect("Provider not set");
         let provider = Provider::<Http>::try_from(provider_string)?; 
         let chain_id = provider.get_chainid().await?;
 
         let mut result: Vec<(Address, u128)> = vec![]; 
 
-        if shared_secrets.len() > 0{
-            for (i, s) in shared_secrets.iter().enumerate(){
-                let p = calculate_stealth_priv_key(&s, &k);
+        if scan_result.len() > 0{
+            for s in scan_result{
+                let mut ss: [u8; 32] = [0; 32]; 
+                hex::decode_to_slice(s.shared_secret, &mut ss)?;
+
+                let p = calculate_stealth_priv_key(&ss, &k);
   
                 let wallet = p.parse::<LocalWallet>()?.with_chain_id(chain_id.as_u64());
             
@@ -113,9 +141,9 @@ impl BlockchainService {
                 
                     let pending_tx = client.send_transaction(tx, None).await?;
                     let _ = pending_tx.await?;   
-                    result.push((stealth_addresses[i], max_amount.as_u128()))
+                    result.push((s.stealth_address, max_amount.as_u128()))
                 }else{
-                    result.push((stealth_addresses[i], 0u128));
+                    result.push((s.stealth_address, 0u128));
                 }
                 
             }
@@ -129,7 +157,7 @@ impl BlockchainService {
     /// * `stealth_addresses` - Stealth addresses as a vector of `Address`
     /// * `ephemeral_public_keys` - Ephemeral public keys for corresponding stealth addresses, hex encoding of Kyber ciphertext 
     /// * `view_tags` - A vector of view tags that represent one byte of hash of shared secret, hex encoding of one byte 
-    async fn fetch_transactions(&self, wallet: &String) -> Result<(Vec<Address>, Vec<String>, Vec<String>), Box<dyn Error>>{
+    pub async fn fetch_transactions(&self, wallet: &String) -> Result<(Vec<Address>, Vec<String>, Vec<String>), Box<dyn Error>>{
         let provider_string = env::var("PROVIDER_STRING").expect("Provider not set");
         let provider = Provider::<Http>::try_from(provider_string)?; 
         let contract_address:Address = env::var("CONTRACT_ADDRESS").expect("Contract address not set").parse()?; 

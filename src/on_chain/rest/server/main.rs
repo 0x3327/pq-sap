@@ -1,5 +1,5 @@
 use actix_web::{web, App, HttpServer};
-use pq_sap::on_chain::{rest::{controller::blockchain_controller::{receive_eth, send_eth}, repository::meta_data_repository::MetaDataRepository, service::blockchain_service::BlockchainService}, utils::create_metadata_table};
+use pq_sap::on_chain::{rest::{controller::blockchain_controller::{scan_eth, send_eth}, repository::meta_data_repository::MetaDataRepository, service::blockchain_service::BlockchainService}, utils::create_metadata_table};
 use sqlx::MySqlPool;
 use std::{env, sync::Arc}; 
 use dotenv::dotenv;
@@ -22,7 +22,7 @@ async fn main() -> std::io::Result<()>{
         App::new()
         .app_data(web::Data::new(blockchain_service.clone()))
         .service(send_eth)
-        .service(receive_eth)
+        .service(scan_eth)
     })
     .bind(connection_string)?
     .run()
