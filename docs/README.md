@@ -174,7 +174,7 @@ Protocol can be accessed in two ways:
 
 The CLI is pretty straight-forward to use, in order to send eth, user would need to input the amount to be sent, his wallet's private-key and ens name of the recipient.  In order to receive the funds from the stealth address one would have to input his $k$, $v$ and destination wallet.  
 
-Rest API exposes two endpoints, `send_eth` and `receive_eth` that accept the same input as the CLI, just `json` formatted. 
+Rest API exposes two endpoints, `send_eth` and `receive_eth`. `send_eth` uses meta-address to compute the stealth public key, stealth address, ephemeral public key and viewtag for user, afterwards the user needs to use client side code(our cli for example) in order to sign and finish the transaction. `scan-eth` needs $v$ but it is good because we can outsource this search to the server, after receiving potential addresses to claim money and shared secret the user can use it's $k$ to compute the stealth private key and receive the funds(again we stress that this needs to be done on client side, for example, cli).  
 
 MySQL is used in order to store metadata, that is the destination wallet and the last block accessed pair, in order to avoid redundant search of announcements, it searches from the last block accessed to the latest block.  
 
