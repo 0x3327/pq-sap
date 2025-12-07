@@ -3147,6 +3147,7 @@ dependencies = [
  "ethers",
  "hex",
  "libc",
+ "pqc_dilithium",
  "pqc_kyber",
  "rand",
  "reqwest 0.12.15",
@@ -3157,6 +3158,15 @@ dependencies = [
  "sha3",
  "sqlx",
  "tokio",
+]
+
+[[package]]
+name = "pqc_dilithium"
+version = "0.2.0"
+source = "git+https://github.com/strahinjapraska/dilithium.git?branch=master#d2396a87950c71f3bcf4699c1a9811c839f40df0"
+dependencies = [
+ "rand",
+ "rand_core",
 ]
 
 [[package]]

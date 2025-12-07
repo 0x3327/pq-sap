@@ -8,6 +8,7 @@ rand = "0.8.5"
 serde_json = "1.0.133"
 serde = { version = "1.0.215", features = ["derive"]}
 pqc_kyber = {git = "https://github.com/0x3327/kyber", branch = "master"}
+pqc_dilithium = {git = "https://github.com/strahinjapraska/dilithium.git", branch = "master", features = ["mode3"]}
 hex = "0.4.3"
 sha2 = "0.10.8"
 libc = "0.2.168"
@@ -24,6 +25,7 @@ actix-web = "4.9.0"
 sqlx = {version = "0.8.3", features=["mysql", "runtime-tokio", "tls-native-tls"]}
 dotenv = "0.15.0"
 reqwest = {version = "0.12.15", features = ["json"]}
+
 
 [build-dependencies]
 cc = "1.2.4"
@@ -75,3 +77,8 @@ path = "src/scripts/generate_keys.rs"
 [[bin]]
 name = "server"
 path = "src/on_chain/rest/server/main.rs"
+
+
+[[bin]]
+name="sender_side_benchmark"
+path="src/benchmarks/sender_side_benchmark.rs"

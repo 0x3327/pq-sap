@@ -1,7 +1,19 @@
-use pq_sap::{crypto::{consts::CIPHERTEXT_BYTES, kem::{decaps, encaps, key_pair}}, versions::v0::calculate_stealth_pub_key};
+use pq_sap::{crypto::{consts::CIPHERTEXT_BYTES, kem::{decaps, encaps, key_pair}}}; 
+use pq_sap::versions::v2::{gen_meta_address, gen_stealth_pub_key};
 //use rand::{seq::SliceRandom, thread_rng};
 use sha2::{Digest, Sha256};
 use std::time::Instant;
+
+fn mean(v: &[f64]) -> f64 {
+    v.iter().sum::<f64>() / v.len() as f64
+}
+
+fn std_dev(v: &[f64], mean: f64) -> f64 {
+    let variance =
+        v.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / v.len() as f64;
+    variance.sqrt()
+}
+
 fn main(){
 
     let ns = [5000, 10000, 20000, 40000, 80000, 1000000];
@@ -32,17 +44,21 @@ fn main(){
 }
 
 fn run(n: usize, m: usize, res: &mut Vec<String>, res2: &mut Vec<String>, res3: &mut Vec<String>){
-    let mut t = 0u128;
-    let mut t2 = 0u128; 
-    let mut t3 = 0u128; 
+    let mut times1: Vec<f64> = vec![];
+    let mut times2: Vec<f64> = vec![];
+    let mut times3: Vec<f64> = vec![];
+    
 
     for k in 0..m{
         println!("\x1B[2J\x1B[1;1H");
         println!("Iteration = {}, announcements = {}", k+1, n);
 
         // Recipient calculates his meta address (K, V)
-        let (k_pub, _) = key_pair();
-        let (v_pub, v_priv) = key_pair();
+        let (V, K) = gen_meta_address();
+        let k_pub = K.1; 
+        let rho = K.0; 
+        let v_pub = V.public; 
+        let v_priv = V.secret;
 
         // Registry containing ephemeral pub keys and corresponding view tags
         let mut registry: Vec<([u8; CIPHERTEXT_BYTES], String, String)> = vec![];
@@ -76,10 +92,10 @@ fn run(n: usize, m: usize, res: &mut Vec<String>, res2: &mut Vec<String>, res3: 
             let view_tag = hash_val_one_byte(&ss);
 
             if entry.2 == view_tag{
-                let _ = calculate_stealth_pub_key(&ss, &k_pub);  
+                let _ = gen_stealth_pub_key(&ss, &k_pub, &rho);  
             }    
         }
-        t2+=start.elapsed().as_millis();
+        times2.push(start.elapsed().as_millis() as f64);
 
         // running with whole hash 
         let start = Instant::now(); 
@@ -91,11 +107,11 @@ fn run(n: usize, m: usize, res: &mut Vec<String>, res2: &mut Vec<String>, res3: 
             // If found 
             if entry.1 == view_tag{
                 // Calculate stealth pub key
-                let _ = calculate_stealth_pub_key(&ss, &k_pub);
+                let _ = gen_stealth_pub_key(&ss, &k_pub, &rho); 
                 break; 
             }   
         }
-        t+=start.elapsed().as_millis();
+        times1.push(start.elapsed().as_millis() as f64);
 
       
 
@@ -103,14 +119,15 @@ fn run(n: usize, m: usize, res: &mut Vec<String>, res2: &mut Vec<String>, res3: 
         let start = Instant::now(); 
         for entry in registry.iter(){
             let ss = decaps(&entry.0, &v_priv); 
-            let _ = calculate_stealth_pub_key(&ss, &k_pub);
+            let P = gen_stealth_pub_key(&ss, &k_pub, &rho); 
         }
-        t3+=start.elapsed().as_millis(); 
+        times3.push(start.elapsed().as_millis() as f64);
+
     }
 
-    res.push(format!("N = {}, {} ms", n,t/(m as u128)));
-    res2.push(format!("N = {}, {} ms", n,t2/(m as u128)));
-    res3.push(format!("N = {}, {} ms", n,t3/(m as u128)));
+    res.push(format!("N = {}, mean = {} ms, std deviation = {}", n,mean(&times1), std_dev(&times1, mean(&times1))));
+    res2.push(format!("N = {}, mean = {} ms, std deviation = {}", n,mean(&times2), std_dev(&times2, mean(&times2))));
+    res3.push(format!("N = {}, mean = {} ms, std deviation = {}", n,mean(&times3), std_dev(&times3, mean(&times3))));
     
 
 }
@@ -127,3 +144,4 @@ pub fn hash_val_one_byte(x: &[u8]) -> String{
     hasher.update(x); 
     hex::encode(hasher.finalize())[0..2].to_string()
 }
+
